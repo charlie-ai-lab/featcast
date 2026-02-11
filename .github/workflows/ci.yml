@@ -21,5 +21,8 @@ jobs:
       - run: npm --version
       - run: npm install
       
+      - name: Generate Prisma
+        run: npx prisma generate
+        
       - name: Build
-        run: echo "Build skipped - manual verification required"
+        run: npm run build
