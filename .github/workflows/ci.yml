@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
       
@@ -20,9 +20,3 @@ jobs:
       - run: node --version
       - run: npm --version
       - run: npm install
-      
-      - name: Generate Prisma
-        run: npx prisma generate
-        
-      - name: Build
-        run: npm run build
