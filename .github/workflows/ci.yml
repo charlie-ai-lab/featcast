@@ -19,3 +19,5 @@ jobs:
       - run: node --version
       - run: npm --version
       - run: npm install
+      - run: npx prisma generate
+      - run: npm run build
