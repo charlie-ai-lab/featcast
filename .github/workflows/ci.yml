@@ -18,3 +18,5 @@ jobs:
           
       - run: node --version
       - run: npm --version
+      
+      - run: npm ci
