@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  githubId      String?   @unique
+  githubToken   String?
+  twitterId     String?   @unique
+  twitterToken  String?
+  twitterSecret String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  repos      Repo[]
+  schedules Schedule[]
+}
+
+model Repo {
+  id              String   @id @default(cuid())
+  userId          String
+  owner           String
+  name            String
+  fullName        String
+  githubToken     String?
+  webhookSecret   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schedules Schedule[]
+  posts     Post[]
+}
+
+model Schedule {
+  id             String    @id @default(cuid())
+  repoId         String
+  userId         String
+  cronExpression String    // "0 9 * * *" 
+  language       String    // "zh" | "en" | "ja"
+  tone           String    // "professional" | "friendly" | "humor"
+  enabled        Boolean   @default(true)
+  lastRun        DateTime?
+  nextRun        DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  repo Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts Post[]
+}
+
+model Post {
+  id             String    @id @default(cuid())
+  repoId         String
+  scheduleId     String?
+  commitRange    String?
+  content        String
+  imageUrl       String?
+  tweetId        String?
+  status         String    @default("pending") // pending, published, failed
+  errorMessage   String?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  
+  // 多平台支持
+  platform       String?   // "twitter" | "xiaohongshu" | "wechat" | null (兼容旧数据)
+  platformPostId String?   // 平台上的post ID
+  platformUrl    String?   // 平台上的帖子URL
+  
+  repo     Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  schedule Schedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+}
+
+model PlatformAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  platform     String   // "twitter" | "xiaohongshu" | "wechat"
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, platform])
+}
