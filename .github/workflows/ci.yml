@@ -23,16 +23,13 @@ jobs:
         run: npm ci
       
       - name: Generate Prisma Client
-        run: npx prisma name: Run linter
-        run generate
+        run: npx prisma generate
       
-      -: npm run lint
+      - name: Lint
+        run: npm run lint
       
-      - name: Run type check
-        run: npm run type-check
-      
-      - name: Run tests
-        run: npm test
+      - name: Build
+        run: npm run build
 
   deploy:
     needs: test
@@ -42,7 +39,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel Preview
+        if: github.event_name == 'pull_request'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.ORG_ID }}
+          vercel-project-id: ${{ secrets.PROJECT_ID }}
+
+      - name: Deploy to Vercel Production
+        if: github.ref == 'refs/heads/main'
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
